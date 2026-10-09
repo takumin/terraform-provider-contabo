@@ -68,12 +68,29 @@ terraform {
 terraform state replace-provider registry.terraform.io/contabo/contabo registry.terraform.io/takumin/contabo
 ```
 
-### upstream でマージされた後
+### upstream に取り込まれた後
 
-1. `release` から該当 PR ブランチの差分が `upstream/main` に含まれたことを確認する
-2. 利用側の `source` を `contabo/contabo` に戻し、`terraform state replace-provider` を逆向きに実行する
-3. 独自で抱える差分がなくなったら Registry 上の `takumin/contabo` を deprecated にする
+upstream は外部 PR をマージせず、内容を自前の `release vX.Y.Z` コミットに取り込んだうえで PR を close する運用 (例: #53 は v0.1.42 に取り込まれて close)。
+そのため PR が close されても merge 扱いにならない点に注意し、取り込まれたかは upstream のコードで判断する。
 
-## 現在 upstream に提出中/予定の変更
+1. 該当の変更が `upstream/main` (およびそのリリース) に含まれたことを確認する
+2. `release` を `upstream/main` から作り直し、まだ取り込まれていない PR ブランチと fork 専用コミットだけを載せ直す
+3. 独自で抱える差分がなくなったら、利用側の `source` を `contabo/contabo` に戻して `terraform state replace-provider` を逆向きに実行し、Registry 上の `takumin/contabo` を deprecated にする
 
-- オブジェクトストレージバケットの import 対応
+## ローカルでのビルド
+
+`replace contabo.com/openapi => ./openapi` のため、生成した API クライアントが必要。
+
+```zsh
+make generate-api-clients OPENAPIVOLUME="openapivolume:/local" OUTPUTLOCATION="/local/"
+go build ./... && go test ./...
+```
+
+デフォルト設定 (bind mount) だと生成物が root 所有になり、最後の `docker cp` が失敗するため、CI と同じ named volume 方式を使う。
+
+## upstream へ提出中の PR
+
+| PR | ブランチ | 内容 | 状態 |
+|---|---|---|---|
+| [#57](https://github.com/contabo/terraform-provider-contabo/pull/57) | `fix/openapi-duplicate-tags` | 複数タグを持つ operation で API クライアント生成が壊れる問題の修正 (これがないとリリース workflow が失敗する) | open |
+| [#58](https://github.com/contabo/terraform-provider-contabo/pull/58) | `feat/object-storage-bucket-import` | `contabo_object_storage_bucket` の import 対応 | open |
