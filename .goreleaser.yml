@@ -52,7 +52,7 @@ changelog:
   disable: true
 release:
   github:
-    owner: contabo
+    owner: takumin
     name: terraform-provider-contabo
   extra_files:
     - glob: 'terraform-registry-manifest.json'
