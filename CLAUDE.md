@@ -11,7 +11,7 @@ upstream へ PR を提出しつつ、マージされるまでの間 Terraform Re
 | `feat/*`, `fix/*` | upstream への PR 用。upstream にそのまま出せる差分のみ | `upstream/main` |
 | `release` | 独自リリース用 (デフォルトブランチ)。`upstream/main` + PR ブランチの merge + fork 専用の変更 | `upstream/main` |
 
-- PR ブランチに fork 専用の変更 (`CLAUDE.md`, `.goreleaser.yml` の owner 等) を混入させない
+- PR ブランチに fork 専用の変更 (`CLAUDE.md`, `.goreleaser.yml` の owner, `release.yaml` の `permissions: contents: write` 等) を混入させない
 - fork 専用の変更は `release` にのみコミットする
 - PR は `contabo/terraform-provider-contabo:main` を base にして作成する
 
@@ -49,7 +49,7 @@ git push origin release v$(date +%Y.%-m.%-d)
 ```
 
 タグの push で `.github/workflows/release.yaml` が goreleaser を実行し、GitHub Release 経由で Terraform Registry に取り込まれる。
-GPG 署名用に fork 側の Secrets (`GPG_PRIVATE_KEY`, `PASSPHRASE`) と Registry への公開鍵登録が必要。
+GPG 署名用の鍵 (RSA 4096, 鍵 ID `B86FCEDC0715BAE1`) は 1Password の `Private` Vault の「terraform-provider-contabo GPG signing key」に保存し、fork の Secrets (`GPG_PRIVATE_KEY`, `PASSPHRASE`) と Registry に登録済み。
 
 ### 利用側
 
